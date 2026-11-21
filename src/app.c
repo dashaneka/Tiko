@@ -27,14 +27,17 @@ static const char APP_CSS[] =
     "}"
     ".tiko-header button, .tiko-header togglebutton, .tiko-header menubutton > button {"
     "  color: white;"
+    "  padding-left: 6px;"
+    "  padding-right: 6px;"
+    "  min-width: 28px;"
     "}"
     ".tiko-creator-pill {"
     "  background: alpha(white, 0.12);"
     "  border-radius: 999px;"
-    "  padding: 2px 12px;"
+    "  padding: 2px 10px;"
     "  min-height: 26px;"
     "  font-weight: 600;"
-    "  font-size: 13px;"
+    "  font-size: 12px;"
     "  color: white;"
     "}"
     ".tiko-creator-pill:hover { background: alpha(white, 0.22); }"
@@ -463,7 +466,10 @@ static void on_popover_notify(GtkPopover *pop, GParamSpec *ps, gpointer ud) {
 }
 
 static void on_pointer_motion(GtkEventControllerMotion *c, double x, double y, gpointer ud) {
-    (void)c; (void)x; (void)y;
+    (void)x; (void)y;
+    /* Never trigger header revealer relayouts while the user is dragging inside the webview. */
+    GdkModifierType state = gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(c));
+    if (state & (GDK_BUTTON1_MASK | GDK_BUTTON2_MASK | GDK_BUTTON3_MASK)) return;
     show_controls((TikoApp *)ud);
 }
 static void on_chrome_enter(GtkEventControllerMotion *c, double x, double y, gpointer ud) {
@@ -479,7 +485,8 @@ static void on_chrome_leave(GtkEventControllerMotion *c, gpointer ud) {
     schedule_hide_controls(a);
 }
 
-static gboolean on_key_pressed(GtkEventControllerKey *c, guint key, guint kc, GdkModifierType mods, gpointer ud) {
+/* Capture phase: only modifier / window-level shortcuts so web dialogs & sliders always get raw keys first. */
+static gboolean on_app_key_pressed(GtkEventControllerKey *c, guint key, guint kc, GdkModifierType mods, gpointer ud) {
     (void)c; (void)kc;
     TikoApp *a = ud;
     bool ctrl = (mods & GDK_CONTROL_MASK) != 0;
@@ -520,12 +527,17 @@ static gboolean on_key_pressed(GtkEventControllerKey *c, guint key, guint kc, Gd
         }
         return FALSE;
     }
+    return FALSE;
+}
 
-    /* Never intercept typing in search bar, login/search pages, or any focused web input */
+/* Bubble phase: single-key shortcuts run only if WebKitWebView didn't handle the key and no input/dialog is active. */
+static gboolean on_playback_key_pressed(GtkEventControllerKey *c, guint key, guint kc, GdkModifierType mods, gpointer ud) {
+    (void)c; (void)kc;
+    TikoApp *a = ud;
     if (gtk_widget_has_focus(GTK_WIDGET(a->search_entry))) return FALSE;
     if (a->pstate.typing || a->pstate.route == TIKO_ROUTE_LOGIN || a->pstate.route == TIKO_ROUTE_SEARCH)
         return FALSE;
-    if (ctrl || alt || (mods & GDK_SUPER_MASK)) return FALSE;
+    if (mods & (GDK_CONTROL_MASK | GDK_ALT_MASK | GDK_SUPER_MASK)) return FALSE;
 
     switch (gdk_keyval_to_lower(key)) {
         case GDK_KEY_slash:
@@ -689,8 +701,8 @@ static TikoApp *ensure_window(AdwApplication *app, const char *initial_url) {
     a->window = ADW_APPLICATION_WINDOW(win);
     g_object_set_data_full(G_OBJECT(win), "tiko-app", a, free_tiko);
     gtk_window_set_title(GTK_WINDOW(win), "Tiko");
-    gtk_window_set_default_size(GTK_WINDOW(win), 440, 780);
-    gtk_widget_set_size_request(win, 360, 560);
+    gtk_window_set_default_size(GTK_WINDOW(win), 480, 800);
+    gtk_widget_set_size_request(win, 410, 560);
     gtk_widget_add_css_class(win, "tiko-window");
 
     /* Floating Auto-Hiding Monet Header Bar */
@@ -755,7 +767,7 @@ static TikoApp *ensure_window(AdwApplication *app, const char *initial_url) {
     GtkWidget *clbl = gtk_button_get_child(a->creator_btn);
     if (GTK_IS_LABEL(clbl)) {
         gtk_label_set_ellipsize(GTK_LABEL(clbl), PANGO_ELLIPSIZE_END);
-        gtk_label_set_max_width_chars(GTK_LABEL(clbl), 14);
+        gtk_label_set_max_width_chars(GTK_LABEL(clbl), 11);
     }
 
     a->search_btn = GTK_TOGGLE_BUTTON(gtk_toggle_button_new());
@@ -858,10 +870,15 @@ static TikoApp *ensure_window(AdwApplication *app, const char *initial_url) {
     g_signal_connect(top_hover, "leave", G_CALLBACK(on_chrome_leave), a);
     gtk_widget_add_controller(top_box, top_hover);
 
-    GtkEventController *keys = gtk_event_controller_key_new();
-    gtk_event_controller_set_propagation_phase(keys, GTK_PHASE_CAPTURE);
-    g_signal_connect(keys, "key-pressed", G_CALLBACK(on_key_pressed), a);
-    gtk_widget_add_controller(win, keys);
+    GtkEventController *app_keys = gtk_event_controller_key_new();
+    gtk_event_controller_set_propagation_phase(app_keys, GTK_PHASE_CAPTURE);
+    g_signal_connect(app_keys, "key-pressed", G_CALLBACK(on_app_key_pressed), a);
+    gtk_widget_add_controller(win, app_keys);
+
+    GtkEventController *play_keys = gtk_event_controller_key_new();
+    gtk_event_controller_set_propagation_phase(play_keys, GTK_PHASE_BUBBLE);
+    g_signal_connect(play_keys, "key-pressed", G_CALLBACK(on_playback_key_pressed), a);
+    gtk_widget_add_controller(win, play_keys);
 
     g_signal_connect(win, "close-request", G_CALLBACK(on_close_req), a);
 
