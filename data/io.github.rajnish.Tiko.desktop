@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Tiko
+GenericName=TikTok Video Player
+Comment=Distraction-free TikTok viewer in the style of Monet
+Exec=tiko %U
+Icon=io.github.rajnish.Tiko
+Terminal=false
+StartupNotify=true
+Categories=GTK;GNOME;AudioVideo;Video;Player;
+Keywords=tiktok;video;short;creator;watch;tiko;

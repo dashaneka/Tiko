@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#191922"/>
+      <stop offset="100%" stop-color="#0a0a0f"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#25f4ee" stop-opacity="0.45"/>
+      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#fe2c55" stop-opacity="0.45"/>
+    </linearGradient>
+    <radialGradient id="glowCyan" cx="34%" cy="32%" r="48%">
+      <stop offset="0%" stop-color="#25f4ee" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#25f4ee" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowPink" cx="68%" cy="70%" r="48%">
+      <stop offset="0%" stop-color="#fe2c55" stop-opacity="0.24"/>
+      <stop offset="100%" stop-color="#fe2c55" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="8" y="8" width="112" height="112" rx="28" fill="url(#bg)"/>
+  <rect x="8" y="8" width="112" height="112" rx="28" fill="url(#glowCyan)"/>
+  <rect x="8" y="8" width="112" height="112" rx="28" fill="url(#glowPink)"/>
+  <rect x="9" y="9" width="110" height="110" rx="27" fill="none" stroke="url(#rim)" stroke-width="2"/>
+
+  <!-- Subtle vertical 9:16 cinema frame motif -->
+  <rect x="33" y="22" width="62" height="84" rx="14" fill="#000000" fill-opacity="0.42" stroke="#ffffff" stroke-opacity="0.10" stroke-width="1.5"/>
+
+  <!-- Chromatic-split Monet play triangle -->
+  <path d="M51 45.5 L77.5 61.5 C79.5 62.7 79.5 65.3 77.5 66.5 L51 82.5 C49 83.7 46.5 82.2 46.5 79.9 L46.5 48.1 C46.5 45.8 49 44.3 51 45.5 Z"
+        transform="translate(-3.5,-2.5)" fill="#25f4ee" fill-opacity="0.90"/>
+  <path d="M51 45.5 L77.5 61.5 C79.5 62.7 79.5 65.3 77.5 66.5 L51 82.5 C49 83.7 46.5 82.2 46.5 79.9 L46.5 48.1 C46.5 45.8 49 44.3 51 45.5 Z"
+        transform="translate(3.5,2.5)" fill="#fe2c55" fill-opacity="0.90"/>
+  <path d="M51 45.5 L77.5 61.5 C79.5 62.7 79.5 65.3 77.5 66.5 L51 82.5 C49 83.7 46.5 82.2 46.5 79.9 L46.5 48.1 C46.5 45.8 49 44.3 51 45.5 Z"
+        fill="#ffffff"/>
+</svg>
